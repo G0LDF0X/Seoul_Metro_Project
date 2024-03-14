@@ -18,7 +18,7 @@ with st.sidebar:
 
 st.sidebar.title("TECHIT 백엔드 스쿨 9기")
 st.sidebar.subheader("서울 지하철 혼잡도 데이터 대시보드")
-st.sidebar.text("수강생 박찬미 프로젝트")
+st.sidebar.text("1차 프로젝트")
 
 for menu in menus.keys():
     if st.session_state["page"] == menu:
