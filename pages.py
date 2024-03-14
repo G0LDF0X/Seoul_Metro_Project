@@ -76,9 +76,9 @@ def period():
     matplot_data = graph_data.T
 
     fig = plt.figure()
-    plt.title("{} 시간에 따른 {} 지하철 복잡도".format(search_date, station_select))
+    plt.title("{} 시간에 따른 {} 지하철 혼잡도".format(search_date, station_select))
     plt.xlabel("시간")
-    plt.ylabel("복잡도")
+    plt.ylabel("혼잡도")
     for line in line_selects:
         plt.plot(matplot_data.index, matplot_data[line], label=line, linestyle="-", color=color_data[line])
     plt.xticks(fontsize=5, rotation=45)
@@ -140,10 +140,12 @@ def period_all():
 
     # 호선 선택
     line_selects = st.multiselect("호선을 선택해주세요.", data_today["호선"].unique(), placeholder="평균을 확인 할 지하철 호선")
+
+    # 그래프 그리기
     fig = plt.figure()
-    plt.title("{} 시간에 따른 전체 역 평균 지하철 복잡도".format(search_date))
+    plt.title("{} 시간에 따른 전체 역 평균 지하철 혼잡도".format(search_date))
     plt.xlabel("시간")
-    plt.ylabel("복잡도")
+    plt.ylabel("혼잡도")
 
     # 호선을 여러 개 선택했을 경우
     for line in line_selects:
@@ -161,19 +163,128 @@ def period_all():
 # 호선별(특정 역)
 def line():
     st.title("특정 역의 호선별 분석")
-    pass
+
+    # 날짜 선택
+    search_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
+
+    # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
+    if search_date.weekday() == 5:
+        weekday = "토요일"
+    elif search_date.weekday() == 6:
+        weekday = "일요일"
+    else:
+        weekday = "평일"
+
+    data_today = data[data["요일구분"] == weekday]
+
+    # 비교할 역 선택
+    station_select = st.selectbox("역을 선택해주세요.", station_list, index = None, placeholder="역 이름(상하선 구분)")
+    station_data = data_today[data_today["역명"] == station_select]
+
+    # 비교 시간 선택
+    time_select = st.time_input("시간을 선택해주세요.", step=1800)
+
+    # Streamlit에서 제공하는 time_input과 데이터의 시간의 형태가 달라서 맞춰주는 작업 진행
+    time_check = time_select.strftime("%H시%M분")
+    if time_check[0] == "0" and not (time_check[1] == "0" or time_check[1] == "1"):
+        time_check = time_check[1:]
+
+    # 고른 시간에 해당하는 해당 역의 모든 지하철 혼잡도 정보를 불러옴
+    if time_check not in station_data.columns:
+        st.write("선택하신 시간에는 지하철 정보가 존재하지 않습니다.")
+    else:
+        time_data = station_data[["호선", time_check]]
+        st.info("해당 역에 지하철이 하나만 다닐 경우에는 혼잡도 34% 선이 보이지 않습니다.")
+
+        # 그래프 그리기
+        fig = plt.figure()
+        plt.title("{} {} {} 지하철 혼잡도".format(search_date, time_select, station_select))
+        plt.xlabel("호선")
+        plt.ylabel("혼잡도")
+        plt.xticks(fontsize=7, rotation=45)
+        plt.yticks(fontsize=7)
+        plt.legend(loc="best")
+
+        # 막대 그래프
+        plt.bar(time_data["호선"], time_data[time_check])
+
+        # 선그래프
+        plt.plot(time_data["호선"], [34.0] * len(time_data["호선"]), label="혼잡도 34%", linestyle=":", color="red")
+        
+        st.pyplot(fig)
 
 # 호선별(전체)
 def line_all():
     st.title("전체 역의 호선별 분석")
-    pass
+    # 날짜 선택
+    search_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
 
-# 역 별(특정 호선)
-def station():
-    st.title("특정 호선의 시간대에 따른 역별 분석")
-    pass
+    # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
+    if search_date.weekday() == 5:
+        weekday = "토요일"
+    elif search_date.weekday() == 6:
+        weekday = "일요일"
+    else:
+        weekday = "평일"
+
+    data_today = data[data["요일구분"] == weekday]
+
+    # 호선 선택
+    line_select = st.selectbox("호선을 선택해주세요.", data_today["호선"].unique(), placeholder="해당 역을 지나는 지하철 호선")
+    line_data = data_today[data_today["호선"] == line_select]
+
+    # 비교 시간 선택
+    time_select = st.time_input("시간을 선택해주세요.", step=1800)
+
+    # Streamlit에서 제공하는 time_input과 데이터의 시간의 형태가 달라서 맞춰주는 작업 진행
+    time_check = time_select.strftime("%H시%M분")
+    if time_check[0] == "0" and not (time_check[1] == "0" or time_check[1] == "1"):
+        time_check = time_check[1:]
+
+    # 고른 시간에 해당하는 해당 역의 모든 지하철 혼잡도 정보를 불러옴
+    if time_check not in line_data.columns:
+        st.write("선택하신 시간에는 지하철 정보가 존재하지 않습니다.")
+    else:
+        time_data = line_data[["역명", time_check]]
+        st.info("해당 데이터는 실제 노선 진행 방향과는 상관 없이, 가나다 순으로 정렬되었습니다.")
+        time_data["역명"] = time_data["역명"].astype("category")
+    # 그래프 그리기
+        fig = plt.figure()
+        plt.title("{} {} 지하철 혼잡도".format(search_date, time_select, line_select))
+        plt.xlabel("역 이름")
+        plt.ylabel("혼잡도")
+        plt.xticks(fontsize=3, rotation=45)
+        plt.yticks(fontsize=7)
+        plt.legend(loc="best")
+
+        # 막대 그래프
+        plt.bar(time_data["역명"], time_data[time_check], color=color_data[line_select])
+
+        # 선그래프
+        plt.plot(time_data["역명"], [34.0] * len(time_data["역명"]), label="혼잡도 34%", linestyle=":", color=color_data["혼잡도 34%"])
+        
+        st.pyplot(fig)
+
 
 # 역 별(전체)
 def station_all():
     st.title("특정 호선의 전체 시간의 역별 분석")
+    # 날짜 선택
+    search_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
+
+    # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
+    if search_date.weekday() == 5:
+        weekday = "토요일"
+    elif search_date.weekday() == 6:
+        weekday = "일요일"
+    else:
+        weekday = "평일"
+
+    data_today = data[data["요일구분"] == weekday]
     pass
