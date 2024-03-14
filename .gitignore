@@ -161,3 +161,4 @@ cython_debug/
 
 # Data File
 서울교통공사_지하철혼잡도정보_20231231.csv
+test.ipynb

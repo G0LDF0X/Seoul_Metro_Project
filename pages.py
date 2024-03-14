@@ -5,13 +5,19 @@ import folium
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
+from datetime import datetime, timedelta
 
 @st.cache_data
 def load_data():
     data = pd.read_csv("서울교통공사_지하철혼잡도정보_20231231.csv", encoding="cp949")
+    data["역명"] = data.apply(lambda x: x["출발역"] + " " + x["상하구분"], axis=1)
+    data["호선"] = data["호선"].astype(str) + "호선"
     return data
 
 data = load_data()
+line_list = data["호선"].unique()
+station_list = data["역명"].unique()
+time_list = data.columns[6:-1]
 
 def txt_gen(txt):
     for t in list(txt):
@@ -36,6 +42,46 @@ def home():
 # 시간별(특정 역)
 def period():
     st.title("특정 역의 시간별 분석")
+    # 오늘이 평일인지 토요일인지 일요일인지 체크
+    if datetime.today().weekday() == 5:
+        weekday = "토요일"
+    elif datetime.today().weekday() == 6:
+        weekday = "일요일"
+    else:
+        weekday = "평일"
+
+    data_today = data[data["요일구분"] == weekday]
+
+    # 비교할 역 선택
+    station_select = st.selectbox("역을 선택해주세요.", station_list, index = None, placeholder="역명")
+
+    # 임시로 보여주는 테이블 데이터
+    station_data = data_today[data_today["역명"] == station_select]
+    st.dataframe(station_data)
+
+    # 호선 선택
+    line_selects = st.multiselect("호선을 선택해주세요.", station_data["호선"].unique())
+    graph_data = station_data[station_data["호선"].isin(line_selects)].set_index(keys="호선")
+
+    # 시간 자동 정렬 문제를 해결하기 위해, 임의로 시간 앞에 날짜를 붙여주기로 했다.
+    tmp_data = graph_data.iloc[:,6:-1].transpose()
+    index_list = tmp_data.index
+    index_list = list(index_list)
+    for i in range(len(index_list)):
+        if i >= 37:
+            index_list[i] = (datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d") + " " + index_list[i]
+        elif i <= 8:
+            index_list[i] = datetime.today().strftime("%Y-%m-%d") + " 0" + index_list[i]
+        else:
+            index_list[i] = datetime.today().strftime("%Y-%m-%d") + " " + index_list[i]
+
+    tmp_data.index = sorted(index_list)
+
+    st.dataframe(graph_data)
+    st.line_chart(graph_data.iloc[:,6:-1].transpose())
+    st.line_chart(tmp_data)
+
+
     pass
 
 # 시간별(전체)
