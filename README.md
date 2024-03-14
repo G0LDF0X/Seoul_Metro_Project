@@ -74,15 +74,15 @@ pages.py의 period_all() 함수 구현 완료.
 
 
 ### ▼ 전체 지하철의 평일 시간별 평균 복잡도
-![img](./imgs/time_total_graph1.png.png)
+![img](./imgs/time_total_graph1.png)
 
 
 ### ▼ 전체 지하철의 토요일 시간별 평균 복잡도
-![img](./imgs/time_total_graph2.png.png)
+![img](./imgs/time_total_graph2.png)
 
 
 ### ▼ 전체 지하철의 일요일 시간별 평균 복잡도
-![img](./imgs/time_total_graph2.png.png)
+![img](./imgs/time_total_graph2.png)
 
 
 평일은 모든 지하철이 거의 비슷하게 출퇴근 시간에 복잡도가 평균적으로 상승하는 걸 볼 수 있었지만, 토요일에는 2호선의 복잡도가 가장 높았다. 그러나 토요일의 2호선 복잡도가 아무리 높아도 평일의 출퇴근 시간의 복잡도 최대값보다는 낮다는 걸 확인할 수 있었다. 일요일의 경우에는 대부분의 지하철이 혼잡도 34% 아래의 복잡도를 보였고, 1호선과 2호선, 7호선만이 34%보다 높을 때가 있었다.
