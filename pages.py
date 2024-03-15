@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 import requests
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import json
 from collections import defaultdict
 import matplotlib.font_manager as fm
@@ -40,9 +40,9 @@ def load_data():
     # data = pd.read_csv("서울교통공사_지하철혼잡도정보_20231231.csv", encoding="cp949")
 
     # API 호출
-    load_dotenv()
-    data_api_key = os.getenv("DATA_API_KEY")
-    # data_api_key = st.secrets["DATA_API_KEY"]
+    # load_dotenv()
+    # data_api_key = os.getenv("DATA_API_KEY")
+    data_api_key = st.secrets["DATA_API_KEY"]
     URL = "http://api.odcloud.kr/api/15071311/v1/uddi:e477f1d9-2c3a-4dc8-b147-a55584583fa2?page=1&perPage=5000&serviceKey={}".format(data_api_key)
     response = requests.get(URL)
     contents = response.text
