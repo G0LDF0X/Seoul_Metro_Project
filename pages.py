@@ -331,9 +331,9 @@ def line_all():
     # 그래프 그리기
     fig = plt.figure(figsize=(10, 20))
     plt.title("{} {} 지하철 혼잡도".format(search_date, time_select, line_select))
-    plt.xlabel("역 이름")
-    plt.ylabel("혼잡도")
-    plt.xticks(fontsize=8, rotation=45)
+    plt.xlabel("혼잡도")
+    plt.ylabel("역 이름")
+    plt.xticks(fontsize=8)
     plt.yticks(fontsize=8)
     plt.legend(loc="best")
 
@@ -378,7 +378,7 @@ def station_all():
     plt.title("{} {} 전체 시각 평균 지하철 혼잡도".format(search_date, line_select))
     plt.xlabel("혼잡도")
     plt.ylabel("역 이름")
-    plt.xticks(fontsize=8, rotation=45)
+    plt.xticks(fontsize=8)
     plt.yticks(fontsize=8)
     plt.legend(loc="best")
     matplot_data = line_data.T.describe().T
