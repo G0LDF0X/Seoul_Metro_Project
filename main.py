@@ -17,7 +17,7 @@ st.sidebar.title("TECHIT 백엔드 스쿨 9기")
 st.sidebar.subheader("서울 지하철 혼잡도 데이터 대시보드")
 st.sidebar.text("1차 프로젝트")
 st.sidebar.link_button(":computer: GitHub", "https://github.com/G0LDF0X/Seoul_Metro_Project")
-st.sidebar.video("https://youtu.be/LseQZXXBXv8?si=61NpsjHyOP9qHY2d")
+st.sidebar.video("https://youtu.be/ulDltzR-ljI?si=rStHV8akn4nZI-64")
 
 for menu in menus.keys():
     if st.session_state["page"] == menu:

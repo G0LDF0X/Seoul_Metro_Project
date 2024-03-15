@@ -5,14 +5,33 @@ import folium
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
+import requests
+import os
+from dotenv import load_dotenv
+import json
 
 plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
 
 @st.cache_data
 def load_data():
-    data = pd.read_csv("서울교통공사_지하철혼잡도정보_20231231.csv", encoding="cp949")
+
+    # 기존 방식: csv로 가져오기
+    # data = pd.read_csv("서울교통공사_지하철혼잡도정보_20231231.csv", encoding="cp949")
+
+    # API 호출
+    load_dotenv()
+    data_api_key = os.getenv("DATA_API_KEY")
+    URL = "http://api.odcloud.kr/api/15071311/v1/uddi:e477f1d9-2c3a-4dc8-b147-a55584583fa2?page=1&perPage=5000&serviceKey={}".format(data_api_key)
+    response = requests.get(URL)
+    contents = response.text
+    json_data = json.loads(contents)
+    data = pd.json_normalize(json_data["data"])
+    data = data[['연번', '요일구분', '호선', '역번호', '출발역', '상하구분', '5시30분', '6시00분', '6시30분', '7시00분', '7시30분', '8시00분', '8시30분', 
+                 '9시00분', '9시30분', '10시00분', '10시30분', '11시00분', '11시30분', '12시00분', '12시30분', '13시00분', '13시30분', '14시00분', '14시30분', 
+                 '15시00분', '15시30분', '16시00분', '16시30분', '17시00분', '17시30분', '18시00분', '18시30분', '19시00분', '19시30분', '20시00분', '20시30분', 
+                 '21시00분', '21시30분', '22시00분', '22시30분', '23시00분', '23시30분', '00시00분', '00시30분', '01시00분']]
     data["역명"] = data.apply(lambda x: x["출발역"] + " " + x["상하구분"], axis=1)
     data["호선"] = data["호선"].astype(str) + "호선"
     return data
@@ -40,19 +59,21 @@ def home():
     txt = """본 데이터는 서울교통공사가 제공하는 1-8호선의 30분의 정원대비 승차 인원을 혼잡도로 산정하여 작성된 데이터입니다. 승차인과 좌석 수가 일치할 경우 혼잡도를 34%로 산정했습니다.
     해당 데이터는 요일구분(평일, 토요일, 일요일), 호선, 역번호, 역명, 상하선구분, 30분단위 별 혼잡도 데이터로 구성되어 있습니다.
     해당 데이터를 시간별, 호선별, 역별로 가공하여 분석하여 데이터 대시보드를 제작하였습니다."""
-    st.write_stream(txt_gen(txt))
+    # st.write_stream(txt_gen(txt))
     st.divider()
     st.markdown("#### ▼ 지하철 혼잡도 정보")
     st.dataframe(data)
+    test_data = data.iloc[:,6:-1].astype("float")
+    # st.dataframe()
+    st.write(test_data.max())
 
 # 시간별(특정 역)
 def period():
-
-    search_date = datetime.today()
     st.title("특정 역의 시간별 분석")
 
     # 날짜 선택
-    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    today_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", today_date)
     st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
 
     # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
@@ -71,7 +92,7 @@ def period():
 
     # 호선 선택
     line_selects = st.multiselect("호선을 선택해주세요.", station_data["호선"].unique(), placeholder="해당 역을 지나는 지하철 호선")
-    graph_data = station_data[station_data["호선"].isin(line_selects)].set_index(keys="호선").iloc[:, 5:-1]
+    graph_data = station_data[station_data["호선"].isin(line_selects)].set_index(keys="호선").iloc[:, 5:-1].astype("float")
 
     # 그래프 그리기
     matplot_data = graph_data.T
@@ -125,8 +146,8 @@ def period_all():
     st.info("해당 데이터는 각 호선의 평균을 사용했습니다.")
     
     # 날짜 선택
-    search_date = datetime.today()
-    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    today_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", today_date)
     st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
 
     # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
@@ -150,7 +171,7 @@ def period_all():
 
     # 호선을 여러 개 선택했을 경우
     for line in line_selects:
-        graph_data = data_today[data_today["호선"] == line].iloc[:, 6:-1]
+        graph_data = data_today[data_today["호선"] == line].iloc[:, 6:-1].astype("float")
         matplot_data = graph_data.describe().T[["mean"]]
         plt.plot(matplot_data.index, matplot_data["mean"], label = "{} 평균".format(line), color=color_data[line])
 
@@ -166,8 +187,8 @@ def line():
     st.title("특정 역의 호선별 분석")
 
     # 날짜 선택
-    search_date = datetime.today()
-    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    today_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", today_date)
     st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
 
     # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
@@ -197,6 +218,7 @@ def line():
         st.write("선택하신 시간에는 지하철 정보가 존재하지 않습니다.")
     else:
         time_data = station_data[["호선", time_check]]
+        time_data[time_check] = time_data[time_check].astype("float")
         st.info("해당 역에 지하철이 하나만 다닐 경우에는 혼잡도 34% 선이 보이지 않습니다.")
 
         # 그래프 그리기
@@ -219,9 +241,10 @@ def line():
 # 호선별(전체)
 def line_all():
     st.title("전체 역의 호선별 분석")
+
     # 날짜 선택
-    search_date = datetime.today()
-    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    today_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", today_date)
     st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
 
     # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
@@ -253,6 +276,7 @@ def line_all():
         time_data = line_data[["역명", time_check]]
         st.info("해당 데이터는 실제 노선 진행 방향과는 상관 없이, 가나다 순으로 정렬되었습니다.")
         time_data["역명"] = time_data["역명"].astype("category")
+        time_data[time_check] = time_data[time_check].astype("float")
     # 그래프 그리기
         fig = plt.figure()
         plt.title("{} {} 지하철 혼잡도".format(search_date, time_select, line_select))
@@ -274,9 +298,10 @@ def line_all():
 # 역 별(전체)
 def station_all():
     st.title("특정 호선의 전체 시간의 역별 분석")
+
     # 날짜 선택
-    search_date = datetime.today()
-    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", search_date)
+    today_date = datetime.today()
+    search_date = st.date_input("검색하고자 하는 날짜를 입력해주세요.", today_date)
     st.caption("날짜를 선택하지 않을 경우 기본적으로 오늘을 선택합니다.")
 
     # 검색하는 날짜가 평일인지 토요일인지 일요일인지 체크
@@ -288,4 +313,24 @@ def station_all():
         weekday = "평일"
 
     data_today = data[data["요일구분"] == weekday]
+
+    # 호선 선택
+    line_select = st.selectbox("호선을 선택해주세요.", data_today["호선"].unique(), placeholder="해당 역을 지나는 지하철 호선")
+    line_data = data_today[data_today["호선"] == line_select].set_index(keys="역명").iloc[:,6:-1].astype("float")
+
+    st.dataframe(line_data.T.describe().T)
+
+    fig = plt.figure()
+    plt.title("{} {} 전체 시각 평균 지하철 혼잡도".format(search_date, line_select))
+    plt.xlabel("역 이름")
+    plt.ylabel("혼잡도")
+    plt.xticks(fontsize=5, rotation=45)
+    plt.yticks(fontsize=7)
+    plt.legend(loc="best")
+    matplot_data = line_data.T.describe().T
+    plt.bar(matplot_data.index, matplot_data["mean"], color=color_data[line_select])
+
+    plt.plot(matplot_data.index, [34.0] * len(matplot_data.index), label="혼잡도 34%", linestyle=":", color="red")
+    st.pyplot(fig)
+
     pass
