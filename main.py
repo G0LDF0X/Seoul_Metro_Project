@@ -6,7 +6,7 @@ if "page" not in st.session_state:
     st.session_state["page"] = "HOME"
 
 menus = {"HOME": home, "시간별(특정 역)": period, "시간별(전체)": period_all,"호선별(특정 역)": line,
-          "역별(특정 호선)": line_all, "역별(전체)": station_all}
+          "역별(특정 시간)": line_all, "역별(전체)": station_all, "💬 챗봇": chatbot}
 with st.sidebar:
     for menu in menus:
         if st.button(menu, use_container_width=True, type = "primary" if st.session_state["page"] == menu else "secondary"):

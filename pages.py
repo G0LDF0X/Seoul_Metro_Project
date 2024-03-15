@@ -11,6 +11,8 @@ import os
 from dotenv import load_dotenv
 import json
 from collections import defaultdict
+from openai import OpenAI
+
 
 plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
@@ -69,7 +71,6 @@ def home():
     now_time = (datetime.now()).strftime("%H-%M")
     time_split = now_time.split("-")
     hour, minute = int(time_split[0]), int(time_split[1])
-    print(hour, "시", minute, "분")
     if minute >= 0 and minute < 30:
         minute = "00분"
     else:
@@ -117,7 +118,7 @@ def home():
 
 # 시간별(특정 역)
 def period():
-    st.title("특정 역의 시간별 분석")
+    st.title("⏲️ 특정 역의 시간별 분석")
 
     # 날짜 선택
     today_date = datetime.today()
@@ -189,7 +190,7 @@ def period():
 
 # 시간별(전체)
 def period_all():
-    st.title("전체 역의 시간별 분석")
+    st.title("⏲️ 전체 역의 평균 시간별 분석")
     st.info("해당 데이터는 각 호선의 평균을 사용했습니다.")
     
     # 날짜 선택
@@ -226,11 +227,10 @@ def period_all():
     plt.plot(time_list, [34.0] * len(time_list), label="혼잡도 34%", linestyle=":", color="red")
     plt.legend(loc="best")
     st.pyplot(fig)
-    pass
 
 # 호선별(특정 역)
 def line():
-    st.title("특정 역의 호선별 분석")
+    st.title("🚇 특정 역의 특정 시간대 호선별 분석")
 
     # 날짜 선택
     today_date = datetime.today()
@@ -276,7 +276,7 @@ def line():
 
 # 호선별(전체)
 def line_all():
-    st.title("전체 역의 호선별 분석")
+    st.title("🚉 특정 호선의 특정 시간대 역별 분석")
 
     # 날짜 선택
     today_date = datetime.today()
@@ -328,7 +328,7 @@ def line_all():
 
 # 역 별(전체)
 def station_all():
-    st.title("특정 호선의 전체 시간의 역별 분석")
+    st.title("특정 호선의 전체 시간 평균 역별 분석")
 
     # 날짜 선택
     today_date = datetime.today()
@@ -366,3 +366,52 @@ def station_all():
 
     plt.plot([34.0] * len(matplot_data.index), matplot_data.index, label="혼잡도 34%", linestyle=":", color="red")
     st.pyplot(fig)
+
+def chatbot():
+    st.title("지하철 상담 챗봇")
+    st.caption("서울 지하철 혼잡도에 관한 내용을 알아볼 수 있습니다.")
+    
+    load_dotenv()
+    API_KEY = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=API_KEY)
+    MODEL = "gpt-4-0125-preview"
+
+    chat_data = load_data()
+    instructions = """
+    너는 서울 지하철의 혼잡도에 대해 알려주는 상담사야.
+    너는 사용자가 특정 역의 특정 시간대에 대한 혼잡도나, 특정 호선의 특정 시간대에 대한 혼잡도를 질문하면 대답해줘야해.
+    너는 지금 이 시간의 최대 혼잡도와 최소 혼잡도를 아래의 데이터에 기반해 대답해줘야해.
+    {}
+    """.format(chat_data)
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("서울 지하철 혼잡도에 대해 물어보세요."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = ""
+
+            messages = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ]
+            messages.insert(0, {"role": "system", "content": instructions})
+
+            stream = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+                stream=True,
+            )
+            for response in stream:  # pylint: disable=not-an-iterable
+                full_response += response.choices[0].delta.content or ""
+                message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response)
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
