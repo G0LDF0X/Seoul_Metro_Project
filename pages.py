@@ -7,13 +7,30 @@ import matplotlib.pyplot as plt
 import time
 from datetime import datetime
 import requests
-# import os
-# from dotenv import load_dotenv
+import os
+from dotenv import load_dotenv
 import json
 from collections import defaultdict
+import matplotlib.font_manager as fm
+import numpy as np
 
+@st.cache_data
+def fontRegistered():
+    font_dirs = [os.getcwd() + '/customFonts']
+    font_files = fm.findSystemFonts(fontpaths=font_dirs)
 
-plt.rcParams['font.family'] ='Malgun Gothic'
+    for font_file in font_files:
+        fm.fontManager.addfont(font_file)
+    fm._load_fontmanager(try_read_cache=False)
+
+fontRegistered()
+plt.rc('font', family="NanumGothic")
+# fontRegistered()
+# fontNames = [f.name for f in fm.fontManager.ttflist]
+# fontname = st.selectbox("폰트 선택", unique(fontNames))
+# print(fontname)
+# plt.rc('font', family=fontname)
+# plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
 
 @st.cache_data
@@ -23,9 +40,9 @@ def load_data():
     # data = pd.read_csv("서울교통공사_지하철혼잡도정보_20231231.csv", encoding="cp949")
 
     # API 호출
-    # load_dotenv()
-    # data_api_key = os.getenv("DATA_API_KEY")
-    data_api_key = st.secrets["DATA_API_KEY"]
+    load_dotenv()
+    data_api_key = os.getenv("DATA_API_KEY")
+    # data_api_key = st.secrets["DATA_API_KEY"]
     URL = "http://api.odcloud.kr/api/15071311/v1/uddi:e477f1d9-2c3a-4dc8-b147-a55584583fa2?page=1&perPage=5000&serviceKey={}".format(data_api_key)
     response = requests.get(URL)
     contents = response.text
