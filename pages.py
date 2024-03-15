@@ -24,7 +24,8 @@ def load_data():
 
     # API 호출
     load_dotenv()
-    data_api_key = os.getenv("DATA_API_KEY")
+    # data_api_key = os.getenv("DATA_API_KEY")
+    data_api_key = st.secrets["DATA_API_KEY"]
     URL = "http://api.odcloud.kr/api/15071311/v1/uddi:e477f1d9-2c3a-4dc8-b147-a55584583fa2?page=1&perPage=5000&serviceKey={}".format(data_api_key)
     response = requests.get(URL)
     contents = response.text
@@ -61,11 +62,9 @@ def home():
     txt = """본 데이터는 서울교통공사가 제공하는 1-8호선의 30분의 정원대비 승차 인원을 혼잡도로 산정하여 작성된 데이터입니다. 승차인과 좌석 수가 일치할 경우 혼잡도를 34%로 산정했습니다.
     해당 데이터는 요일구분(평일, 토요일, 일요일), 호선, 역번호, 역명, 상하선구분, 30분단위 별 혼잡도 데이터로 구성되어 있습니다.
     해당 데이터를 시간별, 호선별, 역별로 가공하여 분석하여 데이터 대시보드를 제작하였습니다."""
-    st.write_stream(txt_gen(txt))
+    # st.write_stream(txt_gen(txt))
     st.divider()
     st.markdown("#### ▼ 지하철 혼잡도 정보")
-
-
 
     now_time = (datetime.now()).strftime("%H-%M")
     time_split = now_time.split("-")
@@ -84,8 +83,9 @@ def home():
     df = defaultdict(list)
     for line in line_list:
         line_data = data[data["호선"] == line]
-        line_max = line_data[time_str].astype("float").max()
-        line_min = line_data[time_str].astype("float").min()
+        line_remove_zero_data = line_data[line_data[time_str].astype("float") != 0.0]
+        line_max = line_remove_zero_data[time_str].astype("float").max()
+        line_min = line_remove_zero_data[time_str].astype("float").min()
         # line_max_data = line_data[line_data[time_str].astype("float") == line_max]
         # line_min_data = line_data[line_data[time_str].astype("float") == line_min]
         df["호선"].append(line)
@@ -95,8 +95,8 @@ def home():
     df = pd.DataFrame(df).set_index(keys="호선")
 
     st.markdown("**현재 시각 전 호선 복잡도 :**")
-    
-    st.dataframe(df.T)
+    st.caption("(0.0으로 표기되는 곳 제외)")
+    st.dataframe(df.T, use_container_width=True)
     col1, col2 = st.columns(2)
 
     with col1:
@@ -104,16 +104,20 @@ def home():
         max_result = data[time_str].astype("float").max()
         max_data = data[data[time_str].astype("float") == max_result]
         for index, row in max_data.iterrows():
-            st.write(row["역명"], ":", max_result)
+            st.write(row["호선"], row["역명"], ":", max_result)
 
         
 
     with col2:
         st.markdown("**현재 가장 한가한 곳 :**")
-        min_result = data[time_str].astype("float").min()
+        st.caption("(0.0으로 표기되는 곳 제외)")
+        test_data = data[data[time_str].astype("float") != 0.0]
+        test_time_data = test_data[time_str].astype("float")
+        test_final_data = test_time_data.dropna(axis=0)
+        min_result = test_final_data.min()
         min_data = data[data[time_str].astype("float") == min_result]
         for index, row in min_data.iterrows():
-            st.write(row["역명"], ":", min_result)
+            st.write(row["호선"], row["역명"], ":", min_result)
 
 # 시간별(특정 역)
 def period():
