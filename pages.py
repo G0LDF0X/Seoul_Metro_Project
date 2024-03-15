@@ -7,13 +7,24 @@ import matplotlib.pyplot as plt
 import time
 from datetime import datetime
 import requests
-# import os
+import os
 # from dotenv import load_dotenv
 import json
 from collections import defaultdict
+import matplotlib.font_manager as fm
 
+# Streamlit에서 한글이 깨지므로 설정
+@st.cache_data
+def fontRegistered():
+    font_dirs = [os.getcwd() + "/customFonts"]
+    font_files = fm.findSystemFonts(fontpaths=font_dirs)
 
-plt.rcParams['font.family'] ='Malgun Gothic'
+    for font_file in font_files:
+        fm.fontManager.addfont(font_file)
+    fm._load_fontmanager(try_read_cache=False)
+
+fontRegistered()
+plt.rcParams['font.family'] ="NanumGothic-Regular"
 plt.rcParams['axes.unicode_minus'] =False
 
 @st.cache_data
