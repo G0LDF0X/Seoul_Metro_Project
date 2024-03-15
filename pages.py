@@ -24,7 +24,7 @@ def fontRegistered():
     fm._load_fontmanager(try_read_cache=False)
 
 fontRegistered()
-plt.rcParams['font.family'] ="NanumGothic-Regular"
+plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
 
 @st.cache_data
@@ -159,6 +159,9 @@ def period():
     # 그래프 그리기
     matplot_data = graph_data.T
 
+    fontRegistered()
+    fontNames = [f.name for f in fm.fontManager.ttflist][2]
+    plt.rc("font", family=fontNames)
     fig = plt.figure()
     plt.title("{} 시간에 따른 {} 지하철 혼잡도".format(search_date, station_select))
     plt.xlabel("시간")
