@@ -150,3 +150,7 @@ Langchain이나 OpenAI를 이용해 맨 처음에는 DataFrame의 정보를 줘�
 
 ## Ver 1.3.2 (2024. 03. 15 PM 17:58)
 Streamlit에서 Deploy 했을 때 matplotlib로 그린 그래프에서 한글 폰트가 깨지는 현상을 확인했다.
+
+현재 1차적으로 Deploy한 상태이며, 아래 링크에서 확인 가능하다.
+
+[▶ Streamlit 페이지로 이동](https://seoulmetroproject-likelion.streamlit.app/)
