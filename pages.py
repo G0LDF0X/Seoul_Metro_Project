@@ -4,7 +4,7 @@ import pandas as pd
 # import folium
 import matplotlib.pyplot as plt
 import time
-from datetime import datetime
+from datetime import timedelta, datetime
 import requests
 import os
 # from dotenv import load_dotenv
@@ -79,8 +79,8 @@ def home():
     st.divider()
     st.markdown("#### ▼ 지하철 혼잡도 정보")
 
-    now_time = (datetime.now()).strftime("%H-%M")
-    st.write(now_time)
+    # Streamlit 서버는 로컬 시간과 달라서 9시간을 더해줘야함
+    now_time = (datetime.now() + timedelta(hours=9)).strftime("%H-%M")
     time_split = now_time.split("-")
     hour, minute = int(time_split[0]), int(time_split[1])
     if minute >= 0 and minute < 30:
