@@ -7,7 +7,6 @@ import time
 from datetime import timedelta, datetime
 import requests
 import os
-# from dotenv import load_dotenv
 import json
 from collections import defaultdict
 import matplotlib.font_manager as fm
@@ -33,6 +32,7 @@ def load_data():
     # data = pd.read_csv("서울교통공사_지하철혼잡도정보_20231231.csv", encoding="cp949")
 
     # dotenv를 이용한 API 호출
+    # from dotenv import load_dotenv
     # load_dotenv()
     # data_api_key = os.getenv("DATA_API_KEY")
 
