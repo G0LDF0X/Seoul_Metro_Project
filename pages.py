@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 import requests
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import json
 from collections import defaultdict
 import matplotlib.font_manager as fm
