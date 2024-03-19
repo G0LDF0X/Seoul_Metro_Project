@@ -80,6 +80,7 @@ def home():
     st.markdown("#### ▼ 지하철 혼잡도 정보")
 
     now_time = (datetime.now()).strftime("%H-%M")
+    st.write(now_time)
     time_split = now_time.split("-")
     hour, minute = int(time_split[0]), int(time_split[1])
     if minute >= 0 and minute < 30:
