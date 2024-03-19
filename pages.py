@@ -130,7 +130,6 @@ def home():
     with col2:
         st.markdown("**현재 가장 한가한 곳 :**")
         
-
         min_result = no_nan_data.min()
         min_data = data[data[time_str].astype("float") == min_result]
 
@@ -347,4 +346,4 @@ def page_search():
 
     if st.button("검색", use_container_width=True, type = "primary"):
             check_time = time_data[select_time]
-            st.write(search_date, select_station, select_line, select_time, "혼잡도 :", check_time[0].astype(str))
+            st.write(search_date, select_station, select_line, select_time, "혼잡도 :", check_time.astype(str))
