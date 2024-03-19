@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 from pages import *
 
 # 상태 저장
@@ -6,7 +7,7 @@ if "page" not in st.session_state:
     st.session_state["page"] = "HOME"
 
 menus = {"HOME": home, "시간별(특정 역)": period, "시간별(전체)": period_all,"호선별(특정 역)": line,
-          "역별(특정 시간)": line_all, "역별(전체)": station_all}
+          "역별(특정 시간)": line_all, "역별(전체)": station_all, "혼잡도 검색": page_search}
 with st.sidebar:
     for menu in menus:
         if st.button(menu, use_container_width=True, type = "primary" if st.session_state["page"] == menu else "secondary"):
