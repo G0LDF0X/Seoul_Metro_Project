@@ -4,6 +4,9 @@
 
 [▶ Streamlit 페이지로 이동](https://seoulmetroproject-likelion.streamlit.app/)
 
+[▶ 시연 동영상](https://youtu.be/voIZamBMbgg)
+
+
 
 ## Ver 1.0.0 (2024.03.14 AM 10:16)
 main.py 구현 완료
